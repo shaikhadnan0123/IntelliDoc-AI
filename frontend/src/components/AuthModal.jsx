@@ -110,12 +110,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, initialMode 
       onClick={resetAndClose}
     >
       <div
-        className="glass-panel"
+        className="glass-panel modal-glass-container"
         style={{
           width: '100%',
           maxWidth: '440px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: 'var(--radius-lg)',
-          padding: '2rem',
+          padding: '1.75rem',
           position: 'relative',
           border: '1px solid rgba(99, 102, 241, 0.3)',
           boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(99, 102, 241, 0.2)',

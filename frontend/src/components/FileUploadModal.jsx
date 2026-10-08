@@ -94,12 +94,14 @@ export default function FileUploadModal({ isOpen, onClose, onUploadSuccess }) {
       onClick={resetModal}
     >
       <div
-        className="glass-panel"
+        className="glass-panel modal-glass-container"
         style={{
           width: '100%',
           maxWidth: '520px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: 'var(--radius-lg)',
-          padding: '1.75rem',
+          padding: '1.5rem',
           position: 'relative',
           border: '1px solid var(--border-highlight)',
         }}

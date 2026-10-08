@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, Layers, FileText, Bot, AlertCircle, RefreshCcw, HelpCircle } from 'lucide-react';
+import { Send, Sparkles, Layers, FileText, Bot, AlertCircle, RefreshCcw, HelpCircle, X, Folder } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import SourcesPanel from './SourcesPanel';
 import { askQuestion } from '../services/api';
@@ -15,6 +15,7 @@ export default function ChatWorkspace({
   selectedDoc,
   onClearFilter,
   documents = [],
+  onOpenSidebar,
 }) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -98,27 +99,41 @@ export default function ChatWorkspace({
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+    <div style={{ flex: 1, display: 'flex', height: 'calc(100vh - 68px)', overflow: 'hidden', position: 'relative' }}>
       {/* Central Conversation Feed */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', width: '100%' }}>
         {/* Workspace Top Banner / Context Scope */}
         <div
           className="glass-panel"
           style={{
-            padding: '0.75rem 1.5rem',
+            padding: '0.65rem 1rem',
             borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justify: 'space-between',
             backgroundColor: 'rgba(11, 15, 25, 0.7)',
+            flexWrap: 'wrap',
+            gap: '0.5rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Retrieval Filter:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', overflow: 'hidden' }}>
+            {onOpenSidebar && (
+              <button
+                onClick={onOpenSidebar}
+                className="btn-secondary mobile-only"
+                style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem' }}
+                title="Open Document Library"
+              >
+                <Folder style={{ width: '14px', height: '14px', color: 'var(--accent-primary)' }} />
+                <span>Docs</span>
+              </button>
+            )}
+
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }} className="desktop-only">Retrieval Filter:</span>
             {selectedDoc ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span className="badge badge-indigo" style={{ padding: '0.25rem 0.65rem' }}>
-                  <FileText style={{ width: '13px', height: '13px' }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden' }}>
+                <span className="badge badge-indigo" style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <FileText style={{ width: '12px', height: '12px', flexShrink: 0 }} />
                   {selectedDoc}
                 </span>
                 <button
@@ -127,17 +142,18 @@ export default function ChatWorkspace({
                     background: 'none',
                     border: 'none',
                     color: 'var(--text-muted)',
-                    fontSize: '0.75rem',
+                    fontSize: '0.72rem',
                     cursor: 'pointer',
                     textDecoration: 'underline',
+                    flexShrink: 0,
                   }}
                 >
                   Clear filter
                 </button>
               </div>
             ) : (
-              <span className="badge badge-indigo" style={{ padding: '0.25rem 0.65rem' }}>
-                <Layers style={{ width: '13px', height: '13px' }} />
+              <span className="badge badge-indigo" style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem' }}>
+                <Layers style={{ width: '12px', height: '12px' }} />
                 All {documents.length} Indexed PDFs
               </span>
             )}
@@ -201,7 +217,7 @@ export default function ChatWorkspace({
                 <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem' }}>
                   Suggested Prompts
                 </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="starter-prompts-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   {STARTER_QUESTIONS.map((q, idx) => (
                     <button
                       key={idx}
@@ -354,16 +370,30 @@ export default function ChatWorkspace({
       {/* Right Drawer: Retrieved Sources Inspector */}
       {(showSourcesDrawer || activeSources) && (
         <div
-          className="glass-panel animate-fade-in"
+          className="glass-panel animate-fade-in sources-panel-drawer"
           style={{
-            width: '380px',
+            width: '360px',
             height: '100%',
             borderLeft: '1px solid var(--border-color)',
             overflowY: 'auto',
             padding: '1.25rem',
             backgroundColor: 'rgba(11, 15, 25, 0.95)',
+            zIndex: 35,
           }}
         >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+            <button
+              onClick={() => {
+                setShowSourcesDrawer(false);
+                setActiveSources(null);
+              }}
+              className="btn-secondary"
+              style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem' }}
+            >
+              <X style={{ width: '14px', height: '14px' }} />
+              <span>Close</span>
+            </button>
+          </div>
           <SourcesPanel sources={activeSources || []} />
         </div>
       )}

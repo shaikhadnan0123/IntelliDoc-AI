@@ -55,12 +55,14 @@ export default function AdminModal({
       onClick={onClose}
     >
       <div
-        className="glass-panel"
+        className="glass-panel modal-glass-container"
         style={{
           width: '100%',
           maxWidth: '680px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           borderRadius: 'var(--radius-lg)',
-          padding: '2rem',
+          padding: '1.5rem',
           position: 'relative',
           border: '1px solid rgba(244, 63, 94, 0.3)',
           boxShadow: '0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(244, 63, 94, 0.15)',

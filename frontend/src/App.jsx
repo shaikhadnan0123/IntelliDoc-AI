@@ -14,6 +14,11 @@ export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [loadingDocs, setLoadingDocs] = useState(true);
 
+  // Responsive Sidebar state (default open on desktop, closed on mobile)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    return typeof window !== 'undefined' && window.innerWidth >= 768;
+  });
+
   // Authentication state
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -21,6 +26,17 @@ export default function App() {
 
   // Admin Console state
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  // Handle window resize to adjust default sidebar visibility
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load backend health, user session & indexed documents
   const loadInitialData = async () => {
@@ -75,6 +91,10 @@ export default function App() {
     loadInitialData();
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
   return (
     <div className="app-container">
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
@@ -89,19 +109,29 @@ export default function App() {
           onOpenAuth={handleOpenAuth}
           onLogout={handleLogout}
           onOpenAdmin={() => setIsAdminOpen(true)}
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={handleToggleSidebar}
         />
 
         {/* Main Workspace Body */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
           {/* Document Library Sidebar */}
           <Sidebar
             documents={documents}
             selectedDoc={selectedDoc}
-            onSelectDoc={(doc) => setSelectedDoc(doc)}
+            onSelectDoc={(doc) => {
+              setSelectedDoc(doc);
+              // On mobile, auto-close sidebar when selecting a document so chat is visible
+              if (window.innerWidth < 768) {
+                setIsSidebarOpen(false);
+              }
+            }}
             onOpenUpload={() => setIsUploadOpen(true)}
             loading={loadingDocs}
             currentUser={currentUser}
             onRefreshDocs={loadInitialData}
+            isOpen={isSidebarOpen}
+            onCloseSidebar={() => setIsSidebarOpen(false)}
           />
 
           {/* Interactive Chat & RAG Explorer Workspace */}
@@ -109,6 +139,7 @@ export default function App() {
             selectedDoc={selectedDoc}
             onClearFilter={() => setSelectedDoc(null)}
             documents={documents}
+            onOpenSidebar={() => setIsSidebarOpen(true)}
           />
         </div>
       </div>
