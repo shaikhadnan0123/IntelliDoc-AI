@@ -1,37 +1,13 @@
-
-import time
-import os
 import logging
+import os
+import time
 
-from dotenv import load_dotenv
 from groq import Groq
 
-from app.pdf_search import search_documents
-from app.context_builder import build_context
-from app.prompt_builder import build_prompt
-
-
-# --------------------------------------------------
-# Configuration
-# --------------------------------------------------
-
-load_dotenv()
-
-logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-api_key = os.getenv("GROQ_API_KEY")
-
-if not api_key:
-    raise ValueError("GROQ_API_KEY is not configured in .env")
-
-client = Groq(api_key=api_key)
-
-
-# --------------------------------------------------
-# LLM Answer Generation
-# --------------------------------------------------
 
 def generate_answer(prompt: str) -> str:
     """
@@ -41,6 +17,9 @@ def generate_answer(prompt: str) -> str:
     generation_start = time.perf_counter()
 
     try:
+        logger.info("Starting Groq LLM generation...")
+        logger.info("Prompt length: %d characters", len(prompt))
+
         response = client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
@@ -60,7 +39,10 @@ def generate_answer(prompt: str) -> str:
             generation_time
         )
 
-        # Debug information
+        logger.info(
+            "Groq response received successfully."
+        )
+
         if not response.choices:
             logger.error("LLM returned no choices.")
             return ""
@@ -90,35 +72,11 @@ def generate_answer(prompt: str) -> str:
 
         return answer.strip()
 
-    except Exception:
-        logger.exception("LLM generation failed.")
+    except Exception as exc:
+        logger.exception(
+            "LLM generation failed. Error type: %s | Error: %s",
+            type(exc).__name__,
+            str(exc)
+        )
+
         return ""
-
-
-# --------------------------------------------------
-# Standalone Testing
-# --------------------------------------------------
-
-if __name__ == "__main__":
-
-    question = "Who is the current Prime Minister of Japan?"
-
-    search_results = search_documents(
-        question,
-        top_k=3
-    )
-
-    context = build_context(search_results)
-
-    prompt = build_prompt(
-        context,
-        question
-    )
-
-    answer = generate_answer(prompt)
-
-    print("\nQuestion:")
-    print(question)
-
-    print("\nGenerated Answer:\n")
-    print(answer)
