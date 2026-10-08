@@ -60,47 +60,77 @@ app = FastAPI(
 )
 @app.get("/debug/groq")
 def debug_groq():
-    import socket
     import urllib.request
+    import urllib.error
+    import json
+
+    api_key = os.getenv("GROQ_API_KEY")
 
     result = {
-        "key_configured": bool(os.getenv("GROQ_API_KEY")),
-        "dns": False,
-        "https": False,
-        "groq_sdk": False,
+        "key_configured": bool(api_key),
+        "groq_api_test": False,
     }
 
-    try:
-        socket.gethostbyname("api.groq.com")
-        result["dns"] = True
-    except Exception as exc:
-        result["dns_error"] = type(exc).__name__
+    if not api_key:
+        return result
 
     try:
+        payload = json.dumps({
+            "model": "openai/gpt-oss-20b",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "Reply with exactly: GROQ_OK"
+                }
+            ],
+            "temperature": 0,
+            "max_tokens": 10
+        }).encode("utf-8")
+
         request = urllib.request.Request(
-            "https://api.groq.com",
-            method="GET"
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=payload,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
         )
 
-        with urllib.request.urlopen(request, timeout=10) as response:
-            result["https"] = True
-            result["https_status"] = response.status
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = response.read().decode("utf-8")
+
+            result["groq_api_test"] = True
+            result["status"] = response.status
+            result["response_received"] = True
+
+            parsed = json.loads(body)
+
+            result["model_response"] = (
+                parsed.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+            )
+
+    except urllib.error.HTTPError as exc:
+        result["status"] = exc.code
+        result["error_type"] = "HTTPError"
+
+        try:
+            error_body = exc.read().decode("utf-8")
+            parsed = json.loads(error_body)
+
+            result["groq_error"] = parsed.get("error", {}).get(
+                "message",
+                "Unknown Groq API error"
+            )
+
+        except Exception:
+            result["groq_error"] = "HTTP request rejected"
 
     except Exception as exc:
-        result["https_error_type"] = type(exc).__name__
-        result["https_error"] = str(exc)
-
-    try:
-        api_key = os.getenv("GROQ_API_KEY")
-
-        if api_key:
-            client = Groq(api_key=api_key)
-            client.models.list()
-            result["groq_sdk"] = True
-
-    except Exception as exc:
-        result["groq_sdk_error_type"] = type(exc).__name__
-        result["groq_sdk_error"] = str(exc)
+        result["error_type"] = type(exc).__name__
+        result["error"] = str(exc)
 
     return result
 
