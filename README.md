@@ -1,93 +1,110 @@
 # IntelliDoc-AI
 
-**Intelligent Document Question Answering Platform using Retrieval-Augmented Generation (RAG)**
+### Intelligent Document Question Answering with Retrieval-Augmented Generation
 
-IntelliDoc-AI is a document intelligence platform that allows authenticated users to upload documents and ask natural-language questions about their content.
+**IntelliDoc-AI** is a full-stack document intelligence platform that allows authenticated users to upload PDF documents and ask natural-language questions about their content.
 
-Instead of relying only on an LLM's pretrained knowledge, IntelliDoc-AI retrieves relevant document content from a vector database and provides that context to the language model before generating an answer.
+Instead of asking an LLM to answer from its pretrained knowledge alone, IntelliDoc-AI retrieves relevant information from the user's documents and supplies that context to the LLM before generating an answer.
 
-The project combines **FastAPI, PostgreSQL, ChromaDB, Sentence Transformers, Groq, Docker, and Python** to implement an end-to-end RAG application with authentication, role-based access control, and document-level isolation.
+The project demonstrates an end-to-end **RAG architecture** combined with **authentication, RBAC, PostgreSQL, vector search, document processing, LLM integration, and Docker-based deployment**.
 
 ---
 
-## 1. What IntelliDoc-AI Does
+## 🚀 Why IntelliDoc-AI?
 
-The application follows this general workflow:
+Traditional LLM applications can struggle when users need answers from:
+
+* Private documents
+* Company knowledge bases
+* Technical documentation
+* Research papers
+* Internal reports
+* Large PDF collections
+
+IntelliDoc-AI addresses this by connecting an LLM to an external document knowledge base through **Retrieval-Augmented Generation (RAG)**.
 
 ```text
-User
- │
- ▼
-Authenticate
- │
- ▼
-Upload Document
- │
- ▼
-Extract Text
- │
- ▼
-Split into Chunks
- │
- ▼
-Generate Embeddings
- │
- ▼
-Store Vectors in ChromaDB
- │
- ▼
-Ask Question
- │
- ▼
-Generate Question Embedding
- │
- ▼
-Similarity Search
- │
- ▼
-Retrieve Relevant Chunks
- │
- ▼
-Build Context
- │
- ▼
-Send Context + Question to LLM
- │
- ▼
-Generate Grounded Answer
+User Question
+      │
+      ▼
+Question Embedding
+      │
+      ▼
+Semantic Retrieval
+      │
+      ▼
+Relevant Document Chunks
+      │
+      ▼
+Context + Question
+      │
+      ▼
+LLM
+      │
+      ▼
+Grounded Answer
 ```
 
-This approach helps the application answer questions using information contained in the user's documents rather than relying exclusively on general model knowledge.
-
 ---
 
-# 2. Key Features
+# ✨ Key Features
 
-* User registration and authentication
-* Password hashing using Argon2
+### 🔐 Authentication & Security
+
+* User registration and login
 * JWT-based authentication
+* Argon2 password hashing
 * Role-based access control (RBAC)
 * Protected API endpoints
-* Document upload
+* Environment-based secret management
+
+### 📄 Document Intelligence
+
+* PDF document upload
 * PDF text extraction
-* Document chunking
-* Semantic embeddings
-* Vector similarity search
+* Text cleaning and preprocessing
+* Configurable text chunking
+* Overlapping chunks for context preservation
+
+### 🧠 RAG Pipeline
+
+* Sentence Transformer embeddings
 * ChromaDB vector storage
-* PostgreSQL application database
-* User/document isolation
-* Retrieval-Augmented Generation pipeline
-* LLM-based answer generation through Groq
+* Semantic similarity search
+* Top-K document retrieval
+* Context construction
+* Prompt construction
+* LLM-powered answer generation
+
+### 🗄️ Data Layer
+
+* PostgreSQL for application data
+* SQLAlchemy ORM
+* ChromaDB for vector retrieval
+* User/document ownership isolation
+
+### ⚙️ Engineering
+
 * FastAPI REST API
+* Interactive OpenAPI documentation
 * Dockerized backend
-* CPU-oriented deployment
+* CPU-oriented dependency configuration
 * Environment-based configuration
+* Modular Python architecture
+
+### 🖥️ Frontend
+
+* React/Vite interface
+* Authentication workflow
+* Document upload
+* RAG chat workspace
+* Retrieved-source display
+* Answer evaluation interface
+* Admin functionality
 
 ---
 
-# 3. RAG Architecture
-
-IntelliDoc-AI implements a Retrieval-Augmented Generation pipeline.
+# 🏗️ System Architecture
 
 ```text
                          IntelliDoc-AI
@@ -95,22 +112,22 @@ IntelliDoc-AI implements a Retrieval-Augmented Generation pipeline.
                 ┌─────────────┴─────────────┐
                 │                           │
                 ▼                           ▼
-         Document Ingestion            User Question
+        Document Ingestion            User Question
                 │                           │
                 ▼                           ▼
-          PDF Extraction            Question Embedding
+          PDF Extraction             Query Embedding
                 │                           │
                 ▼                           ▼
-             Chunking                Similarity Search
+             Chunking                 Similarity Search
                 │                           │
                 ▼                           ▼
-            Embeddings                  Top-K Chunks
+           Embeddings                    Top-K
                 │                           │
                 ▼                           │
-           ChromaDB ◄───────────────────────┘
+            ChromaDB ◄─────────────────────┘
                 │
                 ▼
-        Retrieved Context
+       Retrieved Document Context
                 │
                 ▼
         Prompt Construction
@@ -119,38 +136,35 @@ IntelliDoc-AI implements a Retrieval-Augmented Generation pipeline.
              Groq LLM
                 │
                 ▼
-          Grounded Answer
+         Grounded Response
+                │
+                ▼
+       Answer + Retrieved Sources
 ```
 
 ---
 
-# 4. RAG Pipeline
+# 🧠 RAG Pipeline
 
-## Step 1 — Document Upload
+## 1. Document Ingestion
 
-An authenticated user uploads a supported document through the application.
-
-The backend validates the request and passes the document into the ingestion pipeline.
-
-## Step 2 — Text Extraction
-
-For PDF documents, text is extracted using `pypdf`.
+An authenticated user uploads a PDF.
 
 ```text
 PDF
  ↓
-Text Extraction
+Validation
  ↓
-Raw Document Text
+Text Extraction
 ```
 
-## Step 3 — Chunking
+PDF text is extracted using `pypdf`.
 
-Large documents are divided into smaller overlapping text chunks.
+---
 
-The current application uses a chunking strategy that allows retrieved sections to contain enough surrounding context without sending an entire document to the LLM.
+## 2. Text Chunking
 
-Conceptually:
+Large documents are divided into smaller overlapping chunks.
 
 ```text
 Document
@@ -162,120 +176,158 @@ Document
 └── Chunk N
 ```
 
-## Step 4 — Embeddings
+Chunking allows the retrieval system to search smaller semantic units instead of processing the entire document for every question.
 
-Each chunk is converted into a numerical vector using a Sentence Transformers embedding model.
+---
 
-The vector represents the semantic meaning of the text.
+## 3. Embedding Generation
+
+Each chunk is converted into a numerical vector using a Sentence Transformer model.
 
 ```text
 Text Chunk
-    ↓
-Embedding Model
-    ↓
-Vector Representation
+    │
+    ▼
+Sentence Transformer
+    │
+    ▼
+Embedding Vector
 ```
 
-## Step 5 — Vector Storage
+The embedding represents the semantic characteristics of the text.
 
-The generated embeddings and associated document information are stored in ChromaDB.
+---
 
-This allows semantic similarity searches to be performed later.
+## 4. Vector Storage
 
-## Step 6 — Question Embedding
+Embeddings, document chunks, and metadata are stored in **ChromaDB**.
 
-When a user asks a question, the question is converted into an embedding using the same embedding model.
+This creates a searchable vector representation of the uploaded documents.
+
+---
+
+## 5. Question Embedding
+
+When the user asks a question, the same embedding model converts the question into a vector.
 
 ```text
 User Question
-     ↓
+     │
+     ▼
 Embedding Model
-     ↓
+     │
+     ▼
 Question Vector
 ```
 
-## Step 7 — Similarity Search
+---
 
-The question vector is compared against stored document vectors.
+## 6. Semantic Retrieval
 
-The most relevant chunks are retrieved using semantic similarity.
+The question vector is compared with stored document vectors.
+
+The system retrieves the most semantically relevant chunks.
 
 ```text
 Question Vector
-      ↓
-ChromaDB
-      ↓
+      │
+      ▼
+   ChromaDB
+      │
+      ▼
 Top-K Relevant Chunks
 ```
 
-## Step 8 — Context Construction
+---
 
-The retrieved chunks are combined into a context that is supplied to the language model.
+## 7. Context Construction
 
-## Step 9 — Prompt Construction
+The retrieved chunks are combined into a context window.
 
-The system builds a prompt containing:
+The application then constructs a prompt containing:
 
-* Retrieved document context
-* User question
-* Instructions for generating the answer
-
-## Step 10 — LLM Generation
-
-The constructed prompt is sent to the configured Groq model.
-
-The LLM generates an answer based on the retrieved context.
+```text
+Retrieved Context
+       +
+User Question
+       +
+System Instructions
+```
 
 ---
 
-# 5. Authentication and RBAC
+## 8. LLM Generation
 
-IntelliDoc-AI contains an authentication layer for protecting application resources.
+The constructed prompt is sent to the configured **Groq LLM**.
 
-The backend uses:
+The model generates an answer using the retrieved document context.
 
-* FastAPI
-* SQLAlchemy
-* PostgreSQL
-* JWT authentication
-* Argon2 password hashing
-* Role-based access control
-
-The authentication flow is conceptually:
+The fundamental RAG principle is:
 
 ```text
-Register
-   ↓
-Password
-   ↓
-Argon2 Hash
-   ↓
-PostgreSQL
+Retrieve → Contextualize → Generate
 ```
 
-During authentication:
+rather than:
+
+```text
+Question → LLM → Uncontrolled Answer
+```
+
+---
+
+# 🔐 Authentication & Authorization
+
+IntelliDoc-AI uses a dedicated authentication layer to protect application resources.
+
+### Authentication Stack
+
+```text
+FastAPI
+   │
+   ├── JWT Authentication
+   │
+   ├── Argon2 Password Hashing
+   │
+   └── PostgreSQL
+```
+
+### Registration
 
 ```text
 Email + Password
-       ↓
-Verify Password Hash
-       ↓
-Create JWT
-       ↓
+       │
+       ▼
+Argon2 Hash
+       │
+       ▼
+PostgreSQL
+```
+
+### Login
+
+```text
+Email + Password
+       │
+       ▼
+Password Verification
+       │
+       ▼
+JWT Token
+       │
+       ▼
 Authenticated API Requests
 ```
 
-Protected endpoints can validate the JWT before allowing access to application resources.
-
-RBAC provides a foundation for distinguishing between different application roles such as regular users and administrators.
+RBAC provides role-based authorization for operations available to different user types.
 
 ---
 
-# 6. Document Isolation
+# 🔒 Multi-User Document Isolation
 
-A key requirement of a multi-user document application is preventing one user from accessing another user's documents.
+A document intelligence platform must prevent users from retrieving documents belonging to other users.
 
-IntelliDoc-AI therefore associates document/vector information with the authenticated user.
+IntelliDoc-AI associates document/vector metadata with the authenticated user's scope.
 
 Conceptually:
 
@@ -290,137 +342,223 @@ User B
  └── Document B2
 ```
 
-Retrieval should be performed within the appropriate user/document scope rather than treating every uploaded document as globally accessible.
+Retrieval operations are designed to respect the authenticated user's document scope rather than exposing a global document collection.
 
-This provides the foundation for multi-user document isolation.
+This provides the foundation for secure multi-user RAG.
 
 ---
 
-# 7. PostgreSQL
+# 🗄️ Data Architecture
 
-PostgreSQL is used as the relational application database.
-
-It stores application-level information such as user accounts and authentication-related metadata.
-
-The current application uses SQLAlchemy as the database ORM.
-
-Conceptually:
+IntelliDoc-AI separates relational application data from vector retrieval data.
 
 ```text
-FastAPI
-   │
-   ▼
-SQLAlchemy
-   │
-   ▼
-PostgreSQL
+                  IntelliDoc-AI
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+          ▼                         ▼
+     PostgreSQL                 ChromaDB
+          │                         │
+          ▼                         ▼
+ Users / Roles              Chunks / Embeddings
+ Application Data           Vector Metadata
 ```
 
-PostgreSQL is intentionally separated from the vector database.
+### PostgreSQL
 
----
+Used for structured application data such as:
 
-# 8. ChromaDB
+* Users
+* Roles
+* Authentication metadata
+* Document/application records
 
-ChromaDB is used as the vector database.
+### ChromaDB
 
-It stores:
+Used for:
 
 * Document chunks
 * Embeddings
-* Associated metadata
-
-The application can then perform semantic similarity searches over stored document representations.
-
-The architecture separates responsibilities:
-
-```text
-PostgreSQL
-→ Users / application data
-
-ChromaDB
-→ Document embeddings / vector retrieval
-```
+* Vector metadata
+* Semantic similarity retrieval
 
 ---
 
-# 9. API
+# 🌐 API
 
-The backend is implemented using FastAPI.
+The backend is built with **FastAPI**.
 
-The API provides functionality for areas including:
+Authentication includes endpoints such as:
 
-### Authentication
-
-```text
+```http
 POST /auth/register
 POST /auth/login
 ```
 
-### Application
+The application also exposes protected routes for document processing and RAG operations.
 
-Protected routes are used for authenticated application operations such as document processing and RAG interactions.
-
-The exact available endpoints should be verified from the running FastAPI application's `/docs` page before deployment.
-
-FastAPI automatically provides interactive API documentation through:
+FastAPI automatically provides interactive API documentation:
 
 ```text
-/docs
+http://127.0.0.1:8000/docs
 ```
 
-and OpenAPI schema support.
+and an OpenAPI schema.
 
 ---
 
-# 10. Frontend
+# 🖥️ Frontend
 
-The frontend provides the user-facing interface for interacting with IntelliDoc-AI.
-
-The primary user workflow is:
+The frontend provides a user interface for the complete document-question-answering workflow.
 
 ```text
 Login
-  ↓
+  │
+  ▼
 Authenticated Session
-  ↓
-Upload Document
-  ↓
-Process Document
-  ↓
+  │
+  ▼
+Upload PDF
+  │
+  ▼
+Document Processing
+  │
+  ▼
 Ask Question
-  ↓
-View Retrieved Answer
+  │
+  ▼
+Retrieve Context
+  │
+  ▼
+View Answer + Sources
 ```
 
 The frontend communicates with the FastAPI backend through HTTP API requests.
 
 ---
 
-# 11. Technology Stack
+# 🛠️ Technology Stack
 
-| Component        | Technology            |
-| ---------------- | --------------------- |
-| Backend          | FastAPI               |
-| API Server       | Uvicorn               |
-| Language         | Python                |
-| Database         | PostgreSQL            |
-| ORM              | SQLAlchemy            |
-| Vector Database  | ChromaDB              |
-| Embeddings       | Sentence Transformers |
-| LLM              | Groq                  |
-| PDF Processing   | pypdf                 |
-| Authentication   | JWT                   |
-| Password Hashing | Argon2                |
-| Validation       | Pydantic              |
-| Containerization | Docker                |
-| Configuration    | python-dotenv         |
+| Layer               | Technology            |
+| ------------------- | --------------------- |
+| Frontend            | React / Vite          |
+| Backend             | FastAPI               |
+| API Server          | Uvicorn               |
+| Language            | Python                |
+| Relational Database | PostgreSQL            |
+| ORM                 | SQLAlchemy            |
+| Vector Database     | ChromaDB              |
+| Embeddings          | Sentence Transformers |
+| LLM                 | Groq                  |
+| PDF Processing      | pypdf                 |
+| Authentication      | JWT                   |
+| Password Hashing    | Argon2                |
+| Validation          | Pydantic              |
+| Containerization    | Docker                |
+| Configuration       | python-dotenv         |
 
 ---
 
-# 12. Environment Variables
+# 📁 Project Structure
 
-Sensitive configuration should be stored in environment variables rather than committed to Git.
+```text
+IntelliDoc-AI/
+│
+├── app/
+│   ├── main.py
+│   ├── auth.py
+│   ├── security.py
+│   ├── database.py
+│   ├── models.py
+│   │
+│   ├── document_ingestion.py
+│   ├── document_chunker.py
+│   ├── chunker.py
+│   ├── pdf_processor.py
+│   ├── pdf_embeddings.py
+│   ├── embedding_model.py
+│   │
+│   ├── pdf_search.py
+│   ├── vector_store.py
+│   ├── pdf_vector_store.py
+│   ├── context_builder.py
+│   ├── prompt_builder.py
+│   ├── llm_generator.py
+│   └── answer_evaluator.py
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
+├── scripts/
+│   ├── clean_duplicates.py
+│   └── inspect_duplicates.py
+│
+├── create_admin.py
+├── create_tables.py
+├── ocr_search.py
+│
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── .env.example
+├── requirements-cpu.txt
+└── README.md
+```
+
+---
+
+# ⚙️ Local Setup
+
+## Prerequisites
+
+Install:
+
+* Python 3.12
+* PostgreSQL
+* Docker Desktop
+* Git
+* Node.js / npm
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shaikhadnan0123/IntelliDoc-AI.git
+cd IntelliDoc-AI
+```
+
+### 2. Create a Python environment
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+### 3. Install Python dependencies
+
+```bash
+pip install -r requirements-cpu.txt
+```
+
+### 4. Configure environment variables
+
+Create a local `.env` file based on:
+
+```text
+.env.example
+```
 
 Example:
 
@@ -432,62 +570,21 @@ JWT_SECRET_KEY=your-secret-key
 GROQ_API_KEY=your-groq-api-key
 ```
 
-The actual values should never be committed to the repository.
+**Never commit the real `.env` file or API keys to Git.**
 
-A local `.env` file can be used during development.
-
-Example:
-
-```text
-.env
-```
-
-should remain excluded from Git.
-
----
-
-# 13. Local Development
-
-## Prerequisites
-
-Install:
-
-* Python 3.12
-* PostgreSQL
-* Docker Desktop
-* Git
-
-Create a virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-Activate it on Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements-cpu.txt
-```
-
-Run the FastAPI application:
+### 5. Start the API
 
 ```bash
 python -m uvicorn app.main:app --reload
 ```
 
-The API will normally be available at:
+API:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Interactive API documentation:
+Swagger/OpenAPI:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -495,13 +592,9 @@ http://127.0.0.1:8000/docs
 
 ---
 
-# 14. Docker
+# 🐳 Docker
 
-IntelliDoc-AI includes a Docker-based deployment configuration.
-
-The application uses a CPU-oriented Python environment and installs the required CPU version of PyTorch separately.
-
-The dependency installation is intentionally separated so that the Docker build does not unnecessarily pull the standard PyTorch package.
+IntelliDoc-AI includes a CPU-oriented Docker configuration.
 
 Build the image:
 
@@ -515,289 +608,281 @@ Run the container:
 docker run --name intellidoc-test -p 8000:8000 intellidoc-ai:cpu
 ```
 
-The application runs inside the container using Uvicorn.
-
-Conceptually:
+Architecture:
 
 ```text
-Host Machine
-     │
-     │ Port 8000
-     ▼
-┌──────────────────────┐
-│ Docker Container     │
-│                      │
-│ FastAPI              │
-│ Uvicorn              │
-│ RAG Pipeline         │
-│ Embedding Model      │
-└──────────────────────┘
+Host
+ │
+ │ Port 8000
+ ▼
+┌─────────────────────────┐
+│ IntelliDoc-AI Container  │
+│                         │
+│ FastAPI                 │
+│ RAG Pipeline            │
+│ Embedding Model         │
+│ Uvicorn                 │
+└─────────────────────────┘
 ```
+
+The current Docker configuration is designed for CPU-based execution and separates CPU PyTorch installation from the remaining Python dependencies.
 
 ---
 
-# 15. Project Structure
+# 🔑 Environment Variables
 
-The project is organized into separate components for API handling, authentication, document ingestion, retrieval, and generation.
+The project uses environment variables for sensitive configuration.
 
-A simplified representation is:
+```env
+DATABASE_URL=
+JWT_SECRET_KEY=
+GROQ_API_KEY=
+```
+
+The following files are intentionally excluded from Git:
 
 ```text
-IntelliDoc-AI/
-│
-├── app/
-│   ├── main.py
-│   │
-│   ├── authentication/
-│   │
-│   ├── database/
-│   │
-│   ├── document_ingestion.py
-│   ├── chunker.py
-│   ├── pdf_search.py
-│   ├── context_builder.py
-│   ├── prompt_builder.py
-│   ├── llm_generator.py
-│   └── answer_evaluator.py
-│
-├── requirements-cpu.txt
-├── Dockerfile
-├── .dockerignore
-├── .gitignore
-├── .env
-└── README.md
+.env
+.venv/
+frontend/node_modules/
+frontend/dist/
+chroma_db/
 ```
 
-The exact tree may evolve as the project develops.
+Never commit:
+
+* API keys
+* Database passwords
+* JWT secrets
+* Personal credentials
+* Uploaded private documents
 
 ---
 
-# 16. Security Considerations
-
-Security is an important part of the application because IntelliDoc-AI processes user accounts and uploaded documents.
-
-### Password Security
-
-Passwords should never be stored as plaintext.
-
-The application uses Argon2 password hashing.
-
-### Authentication
-
-Protected API operations require authentication.
-
-### Authorization
-
-RBAC can restrict operations according to the authenticated user's role.
-
-### Secret Management
-
-API keys, database credentials, and JWT secrets must be supplied through environment variables.
-
-They should never be committed to Git.
-
-### Document Isolation
-
-Document retrieval should respect the authenticated user's ownership/scope.
-
-### Input Validation
-
-FastAPI and Pydantic provide request validation before application logic processes incoming data.
-
-### Production Configuration
-
-For production deployment:
-
-* Disable development reload mode.
-* Use strong secrets.
-* Restrict CORS origins.
-* Use HTTPS.
-* Protect PostgreSQL credentials.
-* Do not expose database ports unnecessarily.
-* Use persistent storage for required application data.
-* Apply appropriate authentication and authorization checks to every protected resource.
-
----
-
-# 17. Deployment Architecture
-
-A production deployment can be structured as:
-
-```text
-                         Internet
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │ Reverse Proxy │
-                    │    / HTTPS    │
-                    └───────┬───────┘
-                            │
-                            ▼
-                    ┌───────────────┐
-                    │   FastAPI     │
-                    │   Container   │
-                    └───────┬───────┘
-                            │
-              ┌─────────────┼─────────────┐
-              │             │             │
-              ▼             ▼             ▼
-        PostgreSQL      ChromaDB       Groq API
-        Application     Vector Store   LLM
-        Data            Embeddings
-```
-
-The application can be deployed using Docker-compatible infrastructure.
-
-The database and vector storage should use persistent storage rather than ephemeral container filesystems when deployed to production.
-
----
-
-# 18. Example RAG Workflow
+# 🧪 Example RAG Query
 
 Suppose a user uploads a machine-learning document and asks:
 
-> What type of learning uses labeled data?
+> **What type of learning uses labeled data?**
 
-The system performs:
-
-```text
-1. User authenticates
-        ↓
-2. Document is uploaded
-        ↓
-3. PDF text is extracted
-        ↓
-4. Text is divided into chunks
-        ↓
-5. Chunks are converted into embeddings
-        ↓
-6. Embeddings are stored in ChromaDB
-        ↓
-7. User asks the question
-        ↓
-8. Question is converted into an embedding
-        ↓
-9. ChromaDB searches for similar chunks
-        ↓
-10. Relevant chunks are retrieved
-        ↓
-11. Retrieved chunks become LLM context
-        ↓
-12. Prompt is sent to Groq
-        ↓
-13. LLM generates a context-grounded answer
-```
-
-The important principle is:
+The application performs:
 
 ```text
-Retrieve relevant information first
-                ↓
-Generate answer using retrieved information
+1. Authenticate User
+        ↓
+2. Process Uploaded PDF
+        ↓
+3. Extract Text
+        ↓
+4. Split Text into Chunks
+        ↓
+5. Generate Chunk Embeddings
+        ↓
+6. Store Embeddings in ChromaDB
+        ↓
+7. Embed User Question
+        ↓
+8. Perform Semantic Search
+        ↓
+9. Retrieve Relevant Chunks
+        ↓
+10. Build Context
+        ↓
+11. Construct Prompt
+        ↓
+12. Send Context + Question to Groq
+        ↓
+13. Generate Grounded Answer
 ```
 
-rather than:
-
-```text
-Question
-   ↓
-LLM guesses from pretrained knowledge
-```
+This allows the application to answer questions based on the uploaded document rather than relying exclusively on pretrained model knowledge.
 
 ---
 
-# 19. Why RAG?
+# 🔐 Security Considerations
 
-A language model's pretrained knowledge is not automatically aware of private documents uploaded by an application user.
+Security is considered at multiple layers.
 
-RAG provides a mechanism for connecting an LLM with external knowledge.
+### Password Security
 
-Advantages include:
+Passwords are hashed using **Argon2** rather than stored as plaintext.
 
-* Working with private documents
-* Reducing dependence on model memory
-* Providing relevant context to the LLM
-* Updating knowledge by changing the document collection
-* Supporting domain-specific question answering
+### Authentication
 
-RAG does not guarantee that every generated answer is correct, so retrieval quality, prompt design, model behavior, and evaluation remain important.
+JWT authentication protects authenticated application operations.
 
----
+### Authorization
 
-# 20. Current Project Status
+RBAC provides role-based access control.
 
-The project currently includes the core components required for an end-to-end RAG backend:
+### Secret Management
 
-* FastAPI application
-* PostgreSQL integration
-* User authentication
-* Password hashing
-* RBAC foundation
-* PDF ingestion
-* Text chunking
-* Sentence Transformer embeddings
-* ChromaDB vector storage
-* Semantic retrieval
-* Context construction
-* Prompt construction
-* LLM generation integration
-* Answer evaluation components
-* Docker CPU environment
+Secrets are supplied through environment variables.
 
-The Docker image has been tested successfully with the current CPU dependency configuration.
+### Document Isolation
 
----
+Document retrieval is scoped according to authenticated user ownership.
 
-# 21. Future Improvements
+### Input Validation
 
-Potential future improvements include:
+FastAPI and Pydantic validate incoming API requests.
 
-* Improved document metadata management
-* More advanced retrieval filtering
-* Hybrid keyword + semantic retrieval
-* Reranking retrieved chunks
-* Citation/source display in answers
-* Streaming LLM responses
-* Conversation history
-* Multiple document formats
-* Background document processing
-* Improved evaluation metrics
-* Rate limiting
-* Production monitoring
-* Automated tests
-* CI/CD
-* Persistent production vector storage
-* Improved frontend UX
+### Production Hardening
+
+For production deployment:
+
+* Disable development reload
+* Use strong JWT secrets
+* Restrict CORS origins
+* Use HTTPS
+* Secure PostgreSQL credentials
+* Use persistent database/vector storage
+* Apply authorization checks to protected resources
+* Add rate limiting
+* Add application logging and monitoring
 
 ---
 
-# 22. Learning Objectives
+# 📊 Current Status
 
-This project was designed not only as an application but also as a practical implementation of modern AI engineering concepts.
+### Implemented
 
-Key concepts demonstrated include:
+* [x] FastAPI backend
+* [x] React/Vite frontend
+* [x] PostgreSQL integration
+* [x] SQLAlchemy ORM
+* [x] User authentication
+* [x] Argon2 password hashing
+* [x] JWT authentication
+* [x] RBAC foundation
+* [x] PDF ingestion
+* [x] Text extraction
+* [x] Text chunking
+* [x] Sentence Transformer embeddings
+* [x] ChromaDB vector storage
+* [x] Semantic retrieval
+* [x] Context construction
+* [x] Prompt construction
+* [x] Groq LLM integration
+* [x] Answer evaluation components
+* [x] User/document isolation
+* [x] Docker CPU configuration
 
-* REST APIs
-* Authentication
-* Authorization
-* SQL databases
-* ORM usage
-* Password hashing
-* JWT
-* Document processing
-* Text chunking
-* Embeddings
-* Vector databases
-* Semantic similarity
+---
+
+# 🚧 Future Improvements
+
+Planned improvements include:
+
+* [ ] Hybrid keyword + semantic retrieval
+* [ ] Retrieval reranking
+* [ ] Improved citation/source handling
+* [ ] Streaming LLM responses
+* [ ] Conversation history
+* [ ] Multiple document formats
+* [ ] Background document processing
+* [ ] Automated evaluation benchmarks
+* [ ] Rate limiting
+* [ ] Automated tests
+* [ ] CI/CD pipeline
+* [ ] Production monitoring
+* [ ] Persistent production vector storage
+* [ ] Improved frontend UX
+
+---
+
+# 🎯 Engineering Concepts Demonstrated
+
+This project brings together several practical AI/software engineering concepts:
+
+### AI / GenAI
+
 * Retrieval-Augmented Generation
+* Text embeddings
+* Vector similarity search
+* Semantic retrieval
 * Prompt engineering
 * LLM integration
+* Context construction
+* RAG evaluation
+
+### Backend
+
+* REST API development
+* FastAPI
+* SQLAlchemy
+* PostgreSQL
+* JWT authentication
+* RBAC
+* Password hashing
+* Request validation
+
+### Data / Retrieval
+
+* PDF processing
+* Text preprocessing
+* Chunking strategies
+* Vector databases
+* Metadata filtering
+* Top-K retrieval
+
+### DevOps
+
 * Docker
+* CPU-oriented dependency management
 * Environment-based configuration
-* Multi-user data isolation
+* Git/GitHub
 
 ---
 
-# 23. License
+# 💡 Key Learning
+
+The main engineering lesson from IntelliDoc-AI is that building an LLM application is not only about calling an LLM API.
+
+A reliable RAG system requires a complete pipeline:
+
+```text
+Data Quality
+     ↓
+Document Processing
+     ↓
+Chunking
+     ↓
+Embeddings
+     ↓
+Vector Storage
+     ↓
+Retrieval Quality
+     ↓
+Context Construction
+     ↓
+Prompt Design
+     ↓
+LLM Generation
+     ↓
+Evaluation
+```
+
+The quality of the final answer depends heavily on the quality of the information retrieved and supplied to the model.
+
+---
+
+# 👨‍💻 Author
+
+**Shaikh Adnan**
+
+B.Tech — Artificial Intelligence & Machine Learning
+
+Interested in:
+
+* Machine Learning
+* Generative AI
+* RAG Systems
+* Data Science
+* AI Engineering
+
+---
+
+# 📄 License
 
 This project is intended for educational, portfolio, and demonstration purposes.
