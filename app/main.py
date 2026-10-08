@@ -33,6 +33,8 @@ import chromadb
 import logging
 import time
 import io
+import os
+from groq import Groq
 
 MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 # ===============================
@@ -56,6 +58,34 @@ app = FastAPI(
     description="Document intelligence and RAG API",
     version="1.0.0"
 )
+
+@app.get("/debug/groq")
+def debug_groq():
+    try:
+        api_key = os.getenv("GROQ_API_KEY")
+
+        if not api_key:
+            return {
+                "key_configured": False,
+                "groq_connection": False
+            }
+
+        client = Groq(api_key=api_key)
+        response = client.models.list()
+
+        return {
+            "key_configured": True,
+            "groq_connection": True,
+            "models_available": len(response.data)
+        }
+
+    except Exception as exc:
+        return {
+            "key_configured": bool(os.getenv("GROQ_API_KEY")),
+            "groq_connection": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc)
+        }
 
 # ===============================
 # DATABASE INITIALIZATION
