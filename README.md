@@ -375,25 +375,35 @@ and OpenAPI schema support.
 
 # 10. Frontend
 
-The frontend provides the user-facing interface for interacting with IntelliDoc-AI.
+The frontend provides a modern, responsive user-facing interface for interacting with IntelliDoc-AI, built with **React 18**, **Vite**, and **Lucide Icons** with a custom dark glassmorphic design system.
+
+### Key UI Components:
+* **`Navbar`**: System branding, authentication status, user profile dropdown, and modal triggers.
+* **`Sidebar`**: Document listing, document selection, filtering, and document management.
+* **`ChatWorkspace`**: Interactive RAG Q&A interface with real-time response rendering, conversation history, and evaluation cards.
+* **`SourcesPanel`**: Side panel displaying retrieved context chunks, similarity relevance scores, and metadata breakdown.
+* **`EvaluationCard`**: RAG metric dashboard showing Faithfulness, Context Precision, and Relevance scores.
+* **`FileUploadModal`**: Drag-and-drop document uploader with PDF processing status updates.
+* **`AuthModal`**: Seamless Login and Registration modal interface with token persistence.
+* **`AdminModal`**: Admin management dashboard for role monitoring and system test endpoints.
 
 The primary user workflow is:
 
 ```text
-Login
+Login / Register
   ↓
-Authenticated Session
+Authenticated Session (JWT)
   ↓
-Upload Document
+Upload PDF Document
   ↓
-Process Document
+Ingest & Vectorize
   ↓
-Ask Question
+Ask Question (scoped to active document or all docs)
   ↓
-View Retrieved Answer
+View Context-Grounded Answer + Retrieved Sources & RAG Metrics
 ```
 
-The frontend communicates with the FastAPI backend through HTTP API requests.
+The frontend communicates asynchronously with the FastAPI backend through HTTP REST API requests.
 
 ---
 
@@ -401,14 +411,17 @@ The frontend communicates with the FastAPI backend through HTTP API requests.
 
 | Component        | Technology            |
 | ---------------- | --------------------- |
+| Frontend         | React 18 + Vite       |
+| UI Styling       | Vanilla CSS (Glassmorphism design system) |
+| UI Icons         | Lucide React          |
 | Backend          | FastAPI               |
 | API Server       | Uvicorn               |
-| Language         | Python                |
+| Language         | Python 3.12 / JavaScript (ES6+) |
 | Database         | PostgreSQL            |
 | ORM              | SQLAlchemy            |
 | Vector Database  | ChromaDB              |
 | Embeddings       | Sentence Transformers |
-| LLM              | Groq                  |
+| LLM              | Groq (Llama 3 / Mixtral) |
 | PDF Processing   | pypdf                 |
 | Authentication   | JWT                   |
 | Password Hashing | Argon2                |
@@ -452,10 +465,13 @@ should remain excluded from Git.
 
 Install:
 
-* Python 3.12
+* Python 3.12+
+* Node.js (v18+) & npm
 * PostgreSQL
-* Docker Desktop
+* Docker Desktop (optional)
 * Git
+
+## 1. Backend Setup
 
 Create a virtual environment:
 
@@ -465,8 +481,14 @@ python -m venv .venv
 
 Activate it on Windows:
 
-```bash
+```cmd
 .venv\Scripts\activate
+```
+
+Activate it on macOS/Linux:
+
+```bash
+source .venv/bin/activate
 ```
 
 Install dependencies:
@@ -481,17 +503,32 @@ Run the FastAPI application:
 python -m uvicorn app.main:app --reload
 ```
 
-The API will normally be available at:
+The API will be available at:
+* API Server: `http://127.0.0.1:8000`
+* Interactive OpenAPI Docs: `http://127.0.0.1:8000/docs`
 
-```text
-http://127.0.0.1:8000
+## 2. Frontend Setup
+
+In a separate terminal, navigate to the `frontend` directory:
+
+```bash
+cd frontend
 ```
 
-Interactive API documentation:
+Install Node dependencies:
 
-```text
-http://127.0.0.1:8000/docs
+```bash
+npm install
 ```
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+The React frontend will be available at:
+* Development UI: `http://localhost:5173` (or port indicated by Vite)
 
 ---
 
@@ -538,37 +575,60 @@ Host Machine
 
 # 15. Project Structure
 
-The project is organized into separate components for API handling, authentication, document ingestion, retrieval, and generation.
-
-A simplified representation is:
+The project is organized into separate backend and frontend modules for API handling, authentication, document ingestion, vector retrieval, generation, and user interface.
 
 ```text
 IntelliDoc-AI/
 │
-├── app/
-│   ├── main.py
-│   │
-│   ├── authentication/
-│   │
-│   ├── database/
-│   │
-│   ├── document_ingestion.py
-│   ├── chunker.py
-│   ├── pdf_search.py
-│   ├── context_builder.py
-│   ├── prompt_builder.py
-│   ├── llm_generator.py
-│   └── answer_evaluator.py
+├── app/                        # FastAPI Backend Application
+│   ├── main.py                 # Core API endpoints & router setup
+│   ├── auth.py                 # JWT token generation & verification
+│   ├── security.py             # Password hashing (Argon2) & RBAC dependencies
+│   ├── database.py             # SQLAlchemy session & DB connection
+│   ├── models.py               # ORM database models (User, Document)
+│   ├── document_ingestion.py   # PDF Ingestion coordinator
+│   ├── pdf_processor.py        # PDF text extraction
+│   ├── document_chunker.py     # Text chunking logic
+│   ├── pdf_embeddings.py       # Sentence Transformer embedding pipeline
+│   ├── vector_store.py         # ChromaDB persistence & similarity search
+│   ├── pdf_search.py           # Multi-document vector search integration
+│   ├── context_builder.py      # Context window assembly for LLM
+│   ├── prompt_builder.py       # Prompt engineering & system message generation
+│   ├── llm_generator.py        # Groq LLM API client integration
+│   └── answer_evaluator.py     # Faithfulness & relevance evaluation metrics
 │
-├── requirements-cpu.txt
-├── Dockerfile
+├── frontend/                   # React + Vite Frontend Application
+│   ├── src/
+│   │   ├── components/         # Modular UI Components
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── ChatWorkspace.jsx
+│   │   │   ├── ChatMessage.jsx
+│   │   │   ├── SourcesPanel.jsx
+│   │   │   ├── EvaluationCard.jsx
+│   │   │   ├── FileUploadModal.jsx
+│   │   │   ├── AuthModal.jsx
+│   │   │   └── AdminModal.jsx
+│   │   ├── services/
+│   │   │   └── api.js          # Axios / Fetch backend service layer
+│   │   ├── App.jsx             # Main Application layout & state
+│   │   ├── main.jsx            # React root entry point
+│   │   └── index.css           # Global glassmorphic design system styles
+│   ├── package.json
+│   └── vite.config.js
+│
+├── chroma_db/                  # Local ChromaDB vector store persistent storage
+├── scripts/                    # Utility & admin automation scripts
+├── create_admin.py             # Script to create initial admin user
+├── create_tables.py            # Database schema migration script
+├── ocr_search.py               # OCR helper search utility
+├── requirements-cpu.txt        # Backend dependencies (CPU-optimized)
+├── Dockerfile                  # Containerization file
 ├── .dockerignore
 ├── .gitignore
-├── .env
-└── README.md
+├── .env.example
+└── README.md                   # System documentation
 ```
-
-The exact tree may evolve as the project develops.
 
 ---
 
