@@ -4,8 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field, field_validator
-
-from app.database import get_db
+from app.database import Base, engine, get_db
 from app.models import User, Document
 
 from app.auth import (
@@ -57,6 +56,13 @@ app = FastAPI(
     description="Document intelligence and RAG API",
     version="1.0.0"
 )
+
+# ===============================
+# DATABASE INITIALIZATION
+# ===============================
+
+Base.metadata.create_all(bind=engine)
+
 
 
 app.add_middleware(
