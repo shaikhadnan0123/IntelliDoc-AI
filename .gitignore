@@ -1,0 +1,48 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ChromaDB local database
+chroma_db/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Uploaded documents
+data/documents/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+# Frontend dependencies
+frontend/node_modules/
+
+# Frontend build output
+frontend/dist/
+
+# Legacy / development scripts
+app/backup_legacy_ml_chunks.py
+app/debug_concept_drift.py
+app/dry_run_delete_legacy_ml.py
+app/verify_legacy_backup.py

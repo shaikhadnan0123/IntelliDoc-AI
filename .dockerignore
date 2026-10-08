@@ -1,0 +1,15 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+.env
+.vscode
+.idea
+*.log
+
+# Don't send local Chroma database into the Docker build
+chroma_db
+
+# Don't send uploaded PDFs into the Docker image
+data/documents
