@@ -46,9 +46,15 @@ def search_documents(
     # 2. Build Chroma query
     # --------------------------------------
 
+    collection_count = collection.count()
+
+    if collection_count == 0:
+        print("ChromaDB collection is empty.")
+        return []
+
     query_parameters = {
         "query_embeddings": query_embedding.tolist(),
-        "n_results": min(30, collection.count())
+        "n_results": min(30, collection_count)
     }
 
     if user_id is not None and filename:
