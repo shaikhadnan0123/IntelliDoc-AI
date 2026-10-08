@@ -58,34 +58,51 @@ app = FastAPI(
     description="Document intelligence and RAG API",
     version="1.0.0"
 )
-
 @app.get("/debug/groq")
 def debug_groq():
+    import socket
+    import urllib.request
+
+    result = {
+        "key_configured": bool(os.getenv("GROQ_API_KEY")),
+        "dns": False,
+        "https": False,
+        "groq_sdk": False,
+    }
+
+    try:
+        socket.gethostbyname("api.groq.com")
+        result["dns"] = True
+    except Exception as exc:
+        result["dns_error"] = type(exc).__name__
+
+    try:
+        request = urllib.request.Request(
+            "https://api.groq.com",
+            method="GET"
+        )
+
+        with urllib.request.urlopen(request, timeout=10) as response:
+            result["https"] = True
+            result["https_status"] = response.status
+
+    except Exception as exc:
+        result["https_error_type"] = type(exc).__name__
+        result["https_error"] = str(exc)
+
     try:
         api_key = os.getenv("GROQ_API_KEY")
 
-        if not api_key:
-            return {
-                "key_configured": False,
-                "groq_connection": False
-            }
-
-        client = Groq(api_key=api_key)
-        response = client.models.list()
-
-        return {
-            "key_configured": True,
-            "groq_connection": True,
-            "models_available": len(response.data)
-        }
+        if api_key:
+            client = Groq(api_key=api_key)
+            client.models.list()
+            result["groq_sdk"] = True
 
     except Exception as exc:
-        return {
-            "key_configured": bool(os.getenv("GROQ_API_KEY")),
-            "groq_connection": False,
-            "error_type": type(exc).__name__,
-            "error": str(exc)
-        }
+        result["groq_sdk_error_type"] = type(exc).__name__
+        result["groq_sdk_error"] = str(exc)
+
+    return result
 
 # ===============================
 # DATABASE INITIALIZATION
