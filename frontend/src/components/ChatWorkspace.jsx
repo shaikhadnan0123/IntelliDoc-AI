@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Layers, FileText, Bot, AlertCircle, RefreshCcw, HelpCircle, X, Folder } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import SourcesPanel from './SourcesPanel';
+import Footer from './Footer';
 import { askQuestion } from '../services/api';
 
 const STARTER_QUESTIONS = [
@@ -110,8 +111,8 @@ export default function ChatWorkspace({
             borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
-            justify: 'space-between',
-            backgroundColor: 'rgba(11, 15, 25, 0.7)',
+            justifyContent: 'space-between',
+            backgroundColor: 'var(--bg-card)',
             flexWrap: 'wrap',
             gap: '0.5rem',
           }}
@@ -191,12 +192,13 @@ export default function ChatWorkspace({
             /* Empty State */
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
               <div
+                className="animate-float animate-pulse-glow"
                 style={{
                   width: '64px',
                   height: '64px',
                   borderRadius: '20px',
                   background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
-                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  border: '1px solid var(--border-highlight)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -205,7 +207,7 @@ export default function ChatWorkspace({
               >
                 <Sparkles style={{ width: '32px', height: '32px', color: 'var(--accent-primary)' }} />
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--text-heading)' }}>
                 Ask Anything About Your Documents
               </h2>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', maxWidth: '520px', marginBottom: '2rem' }}>
@@ -222,7 +224,7 @@ export default function ChatWorkspace({
                     <button
                       key={idx}
                       onClick={() => handleSend(q)}
-                      className="glass-card"
+                      className="glass-card animate-slide-up"
                       style={{
                         padding: '0.85rem 1rem',
                         textAlign: 'left',
@@ -232,6 +234,7 @@ export default function ChatWorkspace({
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: '0.5rem',
+                        animationDelay: `${idx * 0.08}s`,
                       }}
                     >
                       <HelpCircle style={{ width: '16px', height: '16px', color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
@@ -252,13 +255,13 @@ export default function ChatWorkspace({
 
           {/* Typing Indicator */}
           {loading && (
-            <div style={{ display: 'flex', gap: '1rem', padding: '1.25rem 1.5rem', backgroundColor: 'rgba(17, 24, 39, 0.5)' }}>
+            <div className="animate-fade-in" style={{ display: 'flex', gap: '1rem', padding: '1.25rem 1.5rem', backgroundColor: 'var(--bg-card)' }}>
               <div
                 style={{
                   width: '36px',
                   height: '36px',
                   borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -268,7 +271,7 @@ export default function ChatWorkspace({
                 <Bot style={{ width: '18px', height: '18px', color: '#ffffff' }} />
               </div>
               <div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>IntelliDoc Assistant</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-heading)' }}>IntelliDoc Assistant</span>
                 <div className="typing-indicator" style={{ marginTop: '0.4rem' }}>
                   <span />
                   <span />
@@ -284,13 +287,14 @@ export default function ChatWorkspace({
           {/* Error Banner */}
           {error && (
             <div
+              className="animate-fade-in"
               style={{
                 margin: '1rem 1.5rem',
                 padding: '0.85rem 1rem',
                 backgroundColor: 'rgba(244, 63, 94, 0.15)',
                 border: '1px solid rgba(244, 63, 94, 0.3)',
                 borderRadius: 'var(--radius-sm)',
-                color: '#fda4af',
+                color: 'var(--accent-rose)',
                 fontSize: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -306,7 +310,7 @@ export default function ChatWorkspace({
         </div>
 
         {/* Input Form Bar */}
-        <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+        <div style={{ padding: '1.25rem 1.5rem 0.5rem 1.5rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -356,7 +360,7 @@ export default function ChatWorkspace({
               <Send style={{ width: '16px', height: '16px' }} />
             </button>
           </form>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', padding: '0 0.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', padding: '0 0.25rem 0.5rem 0.25rem' }}>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
               Press <strong>Enter</strong> to send, <strong>Shift + Enter</strong> for new line
             </span>
@@ -365,19 +369,22 @@ export default function ChatWorkspace({
             </span>
           </div>
         </div>
+
+        {/* Footer with Author Credit & Rights */}
+        <Footer compact={false} />
       </div>
 
       {/* Right Drawer: Retrieved Sources Inspector */}
       {(showSourcesDrawer || activeSources) && (
         <div
-          className="glass-panel animate-fade-in sources-panel-drawer"
+          className="glass-panel animate-slide-right sources-panel-drawer"
           style={{
             width: '360px',
             height: '100%',
             borderLeft: '1px solid var(--border-color)',
             overflowY: 'auto',
             padding: '1.25rem',
-            backgroundColor: 'rgba(11, 15, 25, 0.95)',
+            backgroundColor: 'var(--bg-sidebar)',
             zIndex: 35,
           }}
         >

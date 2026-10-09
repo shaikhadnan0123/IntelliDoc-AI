@@ -21,8 +21,8 @@ export default function ChatMessage({ message, onToggleSources }) {
         display: 'flex',
         gap: '1rem',
         padding: '1.25rem 1.5rem',
-        backgroundColor: isUser ? 'rgba(255, 255, 255, 0.015)' : 'rgba(17, 24, 39, 0.5)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+        backgroundColor: isUser ? 'transparent' : 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-color)',
       }}
     >
       {/* Avatar Icon */}
@@ -33,7 +33,7 @@ export default function ChatMessage({ message, onToggleSources }) {
           borderRadius: '10px',
           background: isUser
             ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
-            : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            : 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -53,7 +53,7 @@ export default function ChatMessage({ message, onToggleSources }) {
         {/* Author Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#ffffff' }}>
+            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-heading)' }}>
               {isUser ? 'You' : 'IntelliDoc Assistant'}
             </span>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
@@ -70,7 +70,7 @@ export default function ChatMessage({ message, onToggleSources }) {
                 style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                 title="Copy Answer"
               >
-                {copied ? <Check style={{ width: '14px', height: '14px', color: '#6ee7b7' }} /> : <Copy style={{ width: '14px', height: '14px' }} />}
+                {copied ? <Check style={{ width: '14px', height: '14px', color: 'var(--accent-emerald)' }} /> : <Copy style={{ width: '14px', height: '14px' }} />}
                 <span>{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
@@ -82,7 +82,7 @@ export default function ChatMessage({ message, onToggleSources }) {
           style={{
             fontSize: '0.92rem',
             lineHeight: '1.65',
-            color: isUser ? '#e5e7eb' : '#f3f4f6',
+            color: 'var(--text-main)',
             whiteSpace: 'pre-wrap',
             fontFamily: 'Inter, sans-serif',
           }}

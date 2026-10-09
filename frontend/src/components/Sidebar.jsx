@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Search, Folder, CheckCircle, Plus, ChevronRight, Layers, Trash2, X, PanelLeftClose } from 'lucide-react';
 import { deleteDocument } from '../services/api';
+import Footer from './Footer';
 
 export default function Sidebar({
   documents = [],
@@ -70,7 +71,7 @@ export default function Sidebar({
           display: 'flex',
           flexDirection: 'column',
           flexShrink: 0,
-          backgroundColor: 'rgba(11, 15, 25, 0.95)',
+          backgroundColor: 'var(--bg-sidebar)',
           zIndex: 45,
         }}
       >
@@ -79,7 +80,7 @@ export default function Sidebar({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
               <Folder style={{ width: '18px', height: '18px', color: 'var(--accent-primary)' }} />
-              <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#ffffff' }}>
+              <h2 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-heading)' }}>
                 Document Library
               </h2>
             </div>
@@ -149,12 +150,12 @@ export default function Sidebar({
               width: '100%',
               display: 'flex',
               alignItems: 'center',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               padding: '0.75rem 0.85rem',
               borderRadius: 'var(--radius-sm)',
               border: selectedDoc === null ? '1px solid var(--accent-primary)' : '1px solid transparent',
               backgroundColor: selectedDoc === null ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-              color: selectedDoc === null ? '#ffffff' : 'var(--text-muted)',
+              color: selectedDoc === null ? 'var(--text-heading)' : 'var(--text-muted)',
               cursor: 'pointer',
               textAlign: 'left',
               transition: 'all 0.2s ease',
@@ -208,14 +209,14 @@ export default function Sidebar({
                       padding: '0.7rem 0.85rem',
                       borderRadius: 'var(--radius-sm)',
                       border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                      backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.14)' : 'rgba(255, 255, 255, 0.025)',
-                      color: isSelected ? '#ffffff' : 'var(--text-main)',
+                      backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.14)' : 'var(--bg-card)',
+                      color: isSelected ? 'var(--text-heading)' : 'var(--text-main)',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
-                      <FileText style={{ width: '16px', height: '16px', color: isSelected ? 'var(--accent-primary)' : '#818cf8', flexShrink: 0 }} />
+                      <FileText style={{ width: '16px', height: '16px', color: isSelected ? 'var(--accent-primary)' : 'var(--accent-secondary)', flexShrink: 0 }} />
                       <span style={{ fontSize: '0.82rem', fontWeight: isSelected ? 600 : 400, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {doc}
                       </span>
@@ -231,7 +232,7 @@ export default function Sidebar({
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: '#fda4af',
+                            color: 'var(--accent-rose)',
                             cursor: 'pointer',
                             padding: '0.25rem',
                             borderRadius: '4px',
@@ -260,8 +261,8 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Footer Stat / Quick Action */}
-        <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(0, 0, 0, 0.25)' }}>
+        {/* Quick Action Ingest Button */}
+        <div style={{ padding: '0.85rem 1rem', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-card)' }}>
           <button
             onClick={onOpenUpload}
             className="btn-primary"
@@ -271,6 +272,9 @@ export default function Sidebar({
             <span>Ingest New Document</span>
           </button>
         </div>
+
+        {/* Footer with Author Credit & Rights */}
+        <Footer compact={true} />
       </aside>
     </>
   );

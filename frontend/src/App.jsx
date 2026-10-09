@@ -14,6 +14,21 @@ export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [loadingDocs, setLoadingDocs] = useState(true);
 
+  // Theme state: 'night' (Dark) | 'normal' (Light)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('intellidoc_theme') || 'night';
+  });
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'night' ? 'normal' : 'night';
+    setTheme(nextTheme);
+    localStorage.setItem('intellidoc_theme', nextTheme);
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   // Responsive Sidebar state (default open on desktop, closed on mobile)
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     return typeof window !== 'undefined' && window.innerWidth >= 768;
@@ -96,7 +111,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-theme={theme}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
         {/* Navigation Top Header */}
         <Navbar
@@ -111,6 +126,8 @@ export default function App() {
           onOpenAdmin={() => setIsAdminOpen(true)}
           isSidebarOpen={isSidebarOpen}
           onToggleSidebar={handleToggleSidebar}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Main Workspace Body */}
